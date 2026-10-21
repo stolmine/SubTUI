@@ -210,18 +210,6 @@ func addSongToPlaylistCmd(playlistID string, songIds []string) tea.Cmd {
 	}
 }
 
-func addRatingCmd(ids []string, rating int) tea.Cmd {
-	return func() tea.Msg {
-		if rating >= 00 && rating <= 5 && len(ids) > 0 {
-			for i := range ids {
-				go api.SubsonicRate(ids[i], rating)
-			}
-		}
-
-		return nil
-	}
-}
-
 func createMediaShareCmd(ids []string) tea.Cmd {
 	return func() tea.Msg {
 

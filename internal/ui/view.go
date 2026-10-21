@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/MattiaPun/SubTUI/v2/internal/api"
@@ -19,7 +18,7 @@ func (m model) View() string {
 		return frame
 	}
 
-	return m.placeArt(frame, m.showHelp || m.showPlaylists || m.showRating || m.confirmQuit)
+	return m.placeArt(frame, m.showHelp || m.showPlaylists || m.confirmQuit)
 }
 
 func (m model) view() string {
@@ -66,24 +65,6 @@ func (m model) view() string {
 		bg := BackgroundWrapper{RenderedView: base}
 
 		return overlay.New(fg, bg, overlay.Center, overlay.Center, 0, 0).View()
-	}
-
-	if m.showRating {
-		content := addRatingContent(m)
-
-		styledContent := popupStyle.Render(
-			lipgloss.JoinVertical(lipgloss.Center,
-				lipgloss.NewStyle().Bold(true).Render("Select Rating"),
-				"",
-				content,
-			),
-		)
-
-		fg := ContentModel{Content: styledContent}
-		bg := BackgroundWrapper{RenderedView: base}
-
-		return overlay.New(fg, bg, overlay.Center, overlay.Center, 0, 0).View()
-
 	}
 
 	if m.showHelp {
@@ -1278,18 +1259,11 @@ func helpViewContent() string {
 
 	libraryKeybinds := section("LIBRARY",
 		line(keys(api.AppConfig.Keybinds.Library.AddToPlaylist), "Add to playlist"),
-		line(keys(api.AppConfig.Keybinds.Library.AddRating), "Add rating"),
 		line(keys(api.AppConfig.Keybinds.Library.GoToAlbum), "Go to album"),
 		line(keys(api.AppConfig.Keybinds.Library.GoToArtist), "Go to artist"),
 		line(keys(api.AppConfig.Keybinds.Library.GoToCurrentAlbum), "Go to current track's album"),
 		line(keys(api.AppConfig.Keybinds.Library.SortPlaylistSongs), "Sort playlist songs"),
 		line(keys(api.AppConfig.Keybinds.Library.ToggleSortDirection), "Toggle sort direction"),
-		line(keys(api.AppConfig.Keybinds.Library.Rate0), "Rate 0"),
-		line(keys(api.AppConfig.Keybinds.Library.Rate1), "Rate 1"),
-		line(keys(api.AppConfig.Keybinds.Library.Rate2), "Rate 2"),
-		line(keys(api.AppConfig.Keybinds.Library.Rate3), "Rate 3"),
-		line(keys(api.AppConfig.Keybinds.Library.Rate4), "Rate 4"),
-		line(keys(api.AppConfig.Keybinds.Library.Rate5), "Rate 5"),
 	)
 
 	mediaKeybinds := section("MEDIA",
@@ -1376,28 +1350,6 @@ func addToPlaylistContent(m model) string {
 	}
 
 	return playlistContent
-}
-
-// Generete the add-rating overlay
-func addRatingContent(m model) string {
-	ratingContent := ""
-	for i := 0; i <= 5; i++ {
-		cursor := ""
-		style := lipgloss.NewStyle()
-
-		if m.cursorPopup == i {
-			style = highlightStyle.Bold(true)
-			cursor = "> "
-		} else {
-			cursor = "  "
-		}
-
-		stars := strings.Repeat("★", i)
-
-		ratingContent += fmt.Sprintf("%s%s %s\n", cursor, style.Render(strconv.Itoa(i)), stars)
-	}
-
-	return lipgloss.NewStyle().Align(lipgloss.Left).Render(ratingContent)
 }
 
 // Generete the view for a too small viewport

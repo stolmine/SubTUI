@@ -63,10 +63,6 @@ func (m model) handlesKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return playlistsMenu(key, m)
 	}
 
-	if m.showRating {
-		return ratingMenu(key, m)
-	}
-
 	if keyMatches(key, api.AppConfig.Keybinds.Global.Help) {
 		m.showHelp = !m.showHelp
 		return m, nil
@@ -149,36 +145,8 @@ func (m model) handlesKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return toggleAddToPlaylistPopup(m), nil
 	}
 
-	if keyMatches(key, api.AppConfig.Keybinds.Library.AddRating) {
-		return toggleAddRatingPopup(m), nil
-	}
-
 	if keyMatches(key, api.AppConfig.Keybinds.Library.GoToCurrentAlbum) {
 		return displayAlbumOfCurrent(m)
-	}
-
-	if keyMatches(key, api.AppConfig.Keybinds.Library.Rate0) {
-		return setRating(m, 0)
-	}
-
-	if keyMatches(key, api.AppConfig.Keybinds.Library.Rate1) {
-		return setRating(m, 1)
-	}
-
-	if keyMatches(key, api.AppConfig.Keybinds.Library.Rate2) {
-		return setRating(m, 2)
-	}
-
-	if keyMatches(key, api.AppConfig.Keybinds.Library.Rate3) {
-		return setRating(m, 3)
-	}
-
-	if keyMatches(key, api.AppConfig.Keybinds.Library.Rate4) {
-		return setRating(m, 4)
-	}
-
-	if keyMatches(key, api.AppConfig.Keybinds.Library.Rate5) {
-		return setRating(m, 5)
 	}
 
 	if keyMatches(key, api.AppConfig.Keybinds.Library.SortPlaylistSongs) {
@@ -540,10 +508,9 @@ func playShuffled(m model) (tea.Model, tea.Cmd) {
 }
 
 func goBack(m model) (tea.Model, tea.Cmd) {
-	if m.showHelp || m.showPlaylists || m.showRating {
+	if m.showHelp || m.showPlaylists {
 		m.showHelp = false
 		m.showPlaylists = false
-		m.showRating = false
 
 		return m, nil
 	}
@@ -1428,35 +1395,6 @@ func toggleAddToPlaylistPopup(m model) model {
 	return m
 }
 
-func toggleAddRatingPopup(m model) model {
-	if m.focus != focusMain {
-		return m
-	}
-
-	switch m.displayMode {
-	case displaySongs:
-		if m.viewMode == viewList && len(m.songs) > 0 && m.songs[m.cursorMain].ID != "" {
-			m.cursorPopup = m.songs[m.cursorMain].Rating
-			m.showRating = !m.showRating
-		} else if m.viewMode == viewQueue && len(m.queue) > 0 && m.queue[m.cursorMain].ID != "" {
-			m.cursorPopup = m.queue[m.cursorMain].Rating
-			m.showRating = !m.showRating
-		}
-	case displayAlbums:
-		if len(m.albums) > 0 && m.albums[m.cursorMain].ID != "" {
-			m.cursorPopup = m.albums[m.cursorMain].Rating
-			m.showRating = !m.showRating
-		}
-	case displayArtist:
-		if len(m.artists) > 0 && m.artists[m.cursorMain].ID != "" {
-			m.cursorPopup = m.artists[m.cursorMain].Rating
-			m.showRating = !m.showRating
-		}
-	}
-
-	return m
-}
-
 func mediaCreateShare(m model) tea.Cmd {
 	if m.focus != focusMain {
 		return nil
@@ -1830,83 +1768,6 @@ func playlistsMenu(key string, m model) (model, tea.Cmd) {
 	}
 
 	return m, nil
-}
-
-func ratingMenu(key string, m model) (model, tea.Cmd) {
-	var cmd tea.Cmd
-	if keyMatches(key, api.AppConfig.Keybinds.Global.Back) || keyMatches(key, api.AppConfig.Keybinds.Library.AddRating) {
-		m.showRating = false
-		m.cursorPopup = 0
-		return m, nil
-	}
-
-	if keyMatches(key, api.AppConfig.Keybinds.Navigation.Up) && m.cursorPopup > 0 {
-		m.cursorPopup--
-	} else if keyMatches(key, api.AppConfig.Keybinds.Navigation.Down) && m.cursorPopup < 5 {
-		m.cursorPopup++
-	} else if keyMatches(key, api.AppConfig.Keybinds.Navigation.Select) && cursorInBounds(m) {
-		m, cmd = setRating(m, m.cursorPopup)
-
-		// Reset popup
-		m.cursorPopup = 0
-		m.showRating = !m.showRating
-
-		return m, cmd
-	}
-
-	return m, nil
-}
-
-func setRating(m model, rating int) (model, tea.Cmd) {
-	if !cursorInBounds(m) {
-		return m, nil
-	}
-
-	var ids []string
-	switch m.displayMode {
-	case displaySongs:
-		var targetList []api.Song
-		switch m.viewMode {
-		case viewList:
-			targetList = m.songs
-		case viewQueue:
-			targetList = m.queue
-		}
-
-		if m.showSelection { // Add selection
-			for i := range m.selectionMap {
-				targetList[i].Rating = rating
-				ids = append(ids, targetList[i].ID)
-			}
-		} else { // Add single album
-			targetList[m.cursorMain].Rating = rating
-			ids = []string{targetList[m.cursorMain].ID}
-		}
-
-	case displayAlbums:
-		if m.showSelection { // Add selection
-			for i := range m.selectionMap {
-				m.albums[i].Rating = rating
-				ids = append(ids, m.albums[i].ID)
-			}
-		} else { // Add single album
-			m.albums[m.cursorMain].Rating = rating
-			ids = []string{m.albums[m.cursorMain].ID}
-		}
-
-	case displayArtist:
-		if m.showSelection { // Add selection
-			for i := range m.selectionMap {
-				m.artists[i].Rating = rating
-				ids = append(ids, m.artists[i].ID)
-			}
-		} else { // Add single artist
-			m.artists[m.cursorMain].Rating = rating
-			ids = []string{m.artists[m.cursorMain].ID}
-		}
-	}
-
-	return m, addRatingCmd(ids, rating)
 }
 
 // Helper for infinte scrolling

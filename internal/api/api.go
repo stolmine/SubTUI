@@ -319,15 +319,6 @@ func SubsonicGetStarred() (*SearchResult3, error) {
 	}, nil
 }
 
-func SubsonicRate(ID string, rating int) {
-	params := url.Values{
-		"id":     {ID},
-		"rating": {strconv.Itoa(rating)},
-	}
-
-	_, _ = subsonicGET("/setRating", params)
-}
-
 func SubsonicStream(id string) string {
 	baseUrl := AppServerConfig.Server.URL + "/rest/stream"
 
