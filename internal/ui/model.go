@@ -8,7 +8,6 @@ import (
 	"github.com/MattiaPun/SubTUI/v2/internal/integration"
 	"github.com/MattiaPun/SubTUI/v2/internal/player"
 	"github.com/charmbracelet/bubbles/textinput"
-	"github.com/charmbracelet/x/mosaic"
 )
 
 var albumTypes = []string{"All", "Random", "Favorites", "Recently Added", "Recently Played", "Most Played"}
@@ -46,8 +45,8 @@ type model struct {
 	displayModePrev int
 
 	// Cover Art
-	coverArt    image.Image
-	coverMosaic mosaic.Mosaic
+	coverArt         image.Image
+	coverArtRendered string // mosaic render of coverArt, cached until the image or size changes
 
 	// App State
 	err                error
@@ -55,6 +54,7 @@ type model struct {
 	lastPlayedSongPath string
 	scrobbled          bool
 	loginErr           string
+	windowTitle        string
 	discordRPC         bool
 	notify             bool
 

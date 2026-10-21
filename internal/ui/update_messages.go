@@ -253,6 +253,16 @@ func (m model) handleErr(msg errMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+// setWindowTitle only emits the terminal escape sequence when the title changes
+func (m *model) setWindowTitle(title string) tea.Cmd {
+	if title == m.windowTitle {
+		return nil
+	}
+
+	m.windowTitle = title
+	return tea.SetWindowTitle(title)
+}
+
 func isPlaying(status player.PlayerStatus) bool {
 	return status.Path != "" &&
 		status.Path != "<nil>" &&
@@ -270,7 +280,10 @@ func (m model) handleStatus(msg statusMsg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 	cmds = append(cmds, syncPlayerCmd())
 
-	if m.dbusInstance != nil {
+	queueEnded := m.playerStatus.Path == "" || m.playerStatus.Path == "<nil>" || len(m.queue) == 0
+
+	// MPRIS state for the idle case is set by ClearMetadata below
+	if m.dbusInstance != nil && !queueEnded {
 		m.dbusInstance.UpdatePosition(int64(m.playerStatus.Current * 1_000_000))
 		if m.playerStatus.Paused {
 			m.dbusInstance.UpdateStatus("Paused")
@@ -280,7 +293,7 @@ func (m model) handleStatus(msg statusMsg) (tea.Model, tea.Cmd) {
 	}
 
 	// Queue ended
-	if m.playerStatus.Path == "" || m.playerStatus.Path == "<nil>" || len(m.queue) == 0 {
+	if queueEnded {
 		m.queue = []api.Song{}
 		m.lastPlayedSongPath = ""
 
@@ -297,6 +310,7 @@ func (m model) handleStatus(msg statusMsg) (tea.Model, tea.Cmd) {
 		// Clear album art
 		if api.AppConfig.Theme.DisplayAlbumArt {
 			m.coverArt = nil
+			m.coverArtRendered = ""
 		}
 
 		// Clear lyrics
@@ -305,7 +319,7 @@ func (m model) handleStatus(msg statusMsg) (tea.Model, tea.Cmd) {
 			m.songLyrics[0].Lines = []api.LyricLine{}
 		}
 
-		cmds = append(cmds, tea.SetWindowTitle("SubTUI"))
+		cmds = append(cmds, m.setWindowTitle("SubTUI"))
 		return m, tea.Batch(cmds...)
 	}
 
@@ -375,8 +389,8 @@ func (m model) handleStatus(msg statusMsg) (tea.Model, tea.Cmd) {
 		m.songLinesOffset = 0
 
 		windowTitle := fmt.Sprintf("%s - %s", metadata.Title, metadata.Artist)
-		cmds = append(cmds, tea.SetWindowTitle(windowTitle)) // Update windows title
-		cmds = append(cmds, m.savePlayQueue())               // Server queue update
+		cmds = append(cmds, m.setWindowTitle(windowTitle)) // Update windows title
+		cmds = append(cmds, m.savePlayQueue())             // Server queue update
 	}
 
 	// Discord update
@@ -506,7 +520,8 @@ func (m model) handleCoverArt(msg coverArtMsg) (tea.Model, tea.Cmd) {
 	width, height := calculateCoverArtSize(m)
 
 	m.coverArt = msg.img
-	m.coverMosaic = mosaic.New().Width(width).Height(height)
+	mosaicRenderer := mosaic.New().Width(width).Height(height)
+	m.coverArtRendered = mosaicRenderer.Render(msg.img)
 	return m, nil
 }
 

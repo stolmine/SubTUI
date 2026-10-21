@@ -16,12 +16,20 @@ func newProp(value interface{}, cb func(*prop.Change) *dbus.Error) *prop.Prop {
 	}
 }
 
+// Per the MPRIS spec, Position changes must not emit PropertiesChanged;
+// clients extrapolate from PlaybackStatus and Rate, and listen for Seeked.
+func newSilentProp(value interface{}) *prop.Prop {
+	p := newProp(value, nil)
+	p.Emit = prop.EmitFalse
+	return p
+}
+
 var playerProps = map[string]*prop.Prop{
 	"PlaybackStatus": newProp("Paused", nil),
 	"Rate":           newProp(1.0, nil),
 	"Metadata":       newProp(map[string]interface{}{}, nil),
 	"Volume":         newProp(float64(100), nil),
-	"Position":       newProp(int64(0), nil),
+	"Position":       newSilentProp(int64(0)),
 	"MinimumRate":    newProp(1.0, nil),
 	"MaximumRate":    newProp(1.0, nil),
 	"CanGoNext":      newProp(true, nil),

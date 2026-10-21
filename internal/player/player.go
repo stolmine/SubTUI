@@ -106,6 +106,10 @@ func InitPlayer() error {
 		"--prefetch-playlist=yes",
 		"--replaygain=" + replayGain,
 		"--loop-file=no",
+		// mpv's default demuxer cache (150MiB ahead + 50MiB back) is sized for
+		// video; 16MiB is still over a minute of FLAC
+		"--demuxer-max-bytes=16MiB",
+		"--demuxer-max-back-bytes=4MiB",
 	}
 
 	mpvCmd = exec.Command("mpv", args...)

@@ -4,15 +4,26 @@ package integration
 
 import (
 	"log"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/godbus/dbus/v5"
 	"github.com/godbus/dbus/v5/prop"
 )
 
+// A position jump larger than this (vs. the extrapolated position) is
+// reported to MPRIS clients as a seek.
+const seekThreshold = 1500 * time.Millisecond
+
 type Instance struct {
 	props *prop.Properties
 	conn  *dbus.Conn
+
+	// Last values pushed to D-Bus, so unchanged values are not re-broadcast
+	lastStatus     string
+	lastPosition   int64
+	lastPositionAt time.Time
+	cleared        bool
 }
 
 func Init(p *tea.Program) *Instance {
@@ -70,19 +81,40 @@ func (ins *Instance) GetStatus() string {
 }
 
 func (ins *Instance) UpdateStatus(status string) {
-	if ins == nil {
+	if ins == nil || status == ins.lastStatus {
 		return
 	}
 
+	ins.lastStatus = status
 	_ = ins.props.Set("org.mpris.MediaPlayer2.Player", "PlaybackStatus", dbus.MakeVariant(string(status)))
 }
 
+// UpdatePosition stores the position (Position does not emit) and sends a
+// Seeked signal when it jumps away from where a client would extrapolate it.
 func (ins *Instance) UpdatePosition(position int64) {
 	if ins == nil {
 		return
 	}
 
+	expected := ins.lastPosition
+	if ins.lastStatus == "Playing" {
+		expected += time.Since(ins.lastPositionAt).Microseconds()
+	}
+
+	drift := position - expected
+	if drift < 0 {
+		drift = -drift
+	}
+
+	seeked := !ins.lastPositionAt.IsZero() && drift > seekThreshold.Microseconds()
+
+	ins.lastPosition = position
+	ins.lastPositionAt = time.Now()
 	_ = ins.props.Set("org.mpris.MediaPlayer2.Player", "Position", dbus.MakeVariant(position))
+
+	if seeked {
+		_ = ins.conn.Emit("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.Seeked", position)
+	}
 }
 
 func (ins *Instance) UpdateMetadata(meta Metadata) {
@@ -90,19 +122,21 @@ func (ins *Instance) UpdateMetadata(meta Metadata) {
 		return
 	}
 
+	ins.cleared = false
 	_ = ins.props.Set("org.mpris.MediaPlayer2.Player", "Metadata", dbus.MakeVariant(meta.ToMap()))
 }
 
 func (ins *Instance) ClearMetadata() {
-	if ins == nil {
+	if ins == nil || ins.cleared {
 		return
 	}
+	ins.cleared = true
 
 	emptyMeta := make(map[string]dbus.Variant)
 	emptyMeta["mpris:trackid"] = dbus.MakeVariant(dbus.ObjectPath("/org/mpris/MediaPlayer2/TrackList/NoTrack"))
 
 	_ = ins.props.Set("org.mpris.MediaPlayer2.Player", "Metadata", dbus.MakeVariant(emptyMeta))
-	_ = ins.props.Set("org.mpris.MediaPlayer2.Player", "PlaybackStatus", dbus.MakeVariant("Stopped"))
+	ins.UpdateStatus("Stopped")
 }
 
 func (ins *Instance) Close() {
