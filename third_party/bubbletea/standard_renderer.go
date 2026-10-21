@@ -180,8 +180,22 @@ func (r *standardRenderer) flush() {
 	r.mtx.Lock()
 	defer r.mtx.Unlock()
 
+	// SubTUI patch: image overlays (see image_overlay.go). Images are re-sent
+	// when the overlays change or the screen is fully repainted.
+	ovs, ovChanged := takeOverlays()
+	if !r.altScreenActive {
+		ovs = nil
+	}
+	redrawImages := len(ovs) > 0 && (ovChanged || r.lastRender == "")
+
 	if r.buf.Len() == 0 || r.buf.String() == r.lastRender {
-		// Nothing to do.
+		// Nothing to do, unless only the images changed.
+		if redrawImages {
+			buf := &bytes.Buffer{}
+			writeOverlays(buf, ovs)
+			buf.WriteString(ansi.CursorPosition(0, r.altLinesRendered))
+			_, _ = r.out.Write(buf.Bytes())
+		}
 		return
 	}
 
@@ -259,7 +273,15 @@ func (r *standardRenderer) flush() {
 			line = ansi.Truncate(line, r.width, "")
 		}
 
-		if ansi.StringWidth(line) < r.width {
+		eraseRight := ansi.StringWidth(line) < r.width
+
+		// SubTUI patch: write around an image overlay instead of over it
+		if ov, ok := overlayAt(ovs, i); ok {
+			suffix := ansi.TruncateLeft(line, ov.Col+ov.Cols, "")
+			line = ansi.Truncate(line, ov.Col, "") + ansi.CursorForward(ov.Cols) + suffix
+		}
+
+		if eraseRight {
 			// We only erase the rest of the line when the line is shorter than
 			// the width of the terminal. When the cursor reaches the end of
 			// the line, any escape sequences that follow will only affect the
@@ -285,6 +307,10 @@ func (r *standardRenderer) flush() {
 		r.altLinesRendered = len(newLines)
 	} else {
 		r.linesRendered = len(newLines)
+	}
+
+	if redrawImages {
+		writeOverlays(buf, ovs)
 	}
 
 	// Make sure the cursor is at the start of the last line to keep rendering

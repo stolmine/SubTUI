@@ -14,6 +14,15 @@ import (
 )
 
 func (m model) View() string {
+	frame := m.view()
+	if !useImageArt() {
+		return frame
+	}
+
+	return m.placeArt(frame, m.showHelp || m.showPlaylists || m.showRating || m.confirmQuit)
+}
+
+func (m model) view() string {
 	if m.width < 50 || m.height < 25 {
 		return viewToSmallContent(m)
 	}
@@ -641,6 +650,12 @@ func footerContent(m model) string {
 		albumArt := m.coverArtRendered
 		infoText := footerInformation(m, m.width-16)
 
+		if useImageArt() {
+			cols, rows := fitSquareArt(m.width/4, footerArtRows)
+			albumArt = m.artPlaceholder(cols, rows)
+			infoText = footerInformation(m, m.width-8-cols)
+		}
+
 		content = lipgloss.JoinHorizontal(lipgloss.Left, "  ", albumArt, "  ", infoText)
 	} else {
 		infoText := footerInformation(m, m.width-6)
@@ -902,6 +917,9 @@ func mediaPlayerSideContent(m model, width int, height int) string {
 		coverArtHeight = remainingHeight - 2
 
 		coverArtStr := m.coverArtRendered
+		if useImageArt() {
+			coverArtStr = m.artPlaceholder(fitSquareArt(width, coverArtHeight))
+		}
 		coverArtStr = lipgloss.NewStyle().MaxHeight(coverArtHeight).Render(coverArtStr)
 
 		sections = append(sections, borderStyle.

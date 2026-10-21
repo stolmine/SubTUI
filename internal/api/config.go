@@ -60,6 +60,7 @@ type App struct {
 
 type Theme struct {
 	DisplayAlbumArt bool     `toml:"display_album_art"`
+	ArtProtocol     string   `toml:"album_art_protocol" comment:"'auto', 'iterm2' (real images: WezTerm, iTerm2) or 'halfblocks'"`
 	Subtle          []string `toml:"subtle"`
 	Highlight       []string `toml:"highlight"`
 	Special         []string `toml:"special"`

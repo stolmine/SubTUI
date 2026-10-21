@@ -61,6 +61,7 @@ type model struct {
 
 	// Rendered header and center panes, shared by all copies of the model
 	paneCache *paneCache
+	artCache  *artCache
 
 	// Integrations
 	dbusInstance    *integration.Instance

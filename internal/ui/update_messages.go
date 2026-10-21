@@ -23,6 +23,7 @@ const doubleClickThreshold = 500 * time.Millisecond
 func (m model) handleWindowResize(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
 	m.width = msg.Width
 	m.height = msg.Height
+	updateCellSize()
 
 	if m.showMediaPlayer {
 
@@ -534,8 +535,10 @@ func (m model) handleCoverArt(msg coverArtMsg) (tea.Model, tea.Cmd) {
 	width, height := calculateCoverArtSize(m)
 
 	m.coverArt = msg.img
-	mosaicRenderer := mosaic.New().Width(width).Height(height)
-	m.coverArtRendered = mosaicRenderer.Render(msg.img)
+	if !useImageArt() {
+		mosaicRenderer := mosaic.New().Width(width).Height(height)
+		m.coverArtRendered = mosaicRenderer.Render(msg.img)
+	}
 	return m, nil
 }
 

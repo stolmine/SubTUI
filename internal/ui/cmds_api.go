@@ -144,7 +144,7 @@ func toggleStarCmd(idsToStar []string, idsToUnstar []string) tea.Cmd {
 
 func getCoverArtCmd(songID string) tea.Cmd {
 	return func() tea.Msg {
-		imgData, err := api.SubsonicCoverArt(songID, 500)
+		imgData, err := api.SubsonicCoverArt(songID, coverArtFetchSize())
 		if err != nil {
 			return nil
 		}

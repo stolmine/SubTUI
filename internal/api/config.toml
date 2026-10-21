@@ -9,6 +9,7 @@ default_volume = -1  # 0-100 for a preset initial volume, -1 to disable
 
 [theme]
 display_album_art  = true
+album_art_protocol = 'auto' # Options: 'auto', 'iterm2' (real images: WezTerm, iTerm2), 'halfblocks'
 # Format: ['Light Color', 'Dark Color']
 subtle             = ['#D9DCCF', '#6B6B6BFF']
 highlight          = ['#874BFD', '#7D56F4']

@@ -7,6 +7,9 @@ import (
 )
 
 func InitialModel() model {
+	artProtocol = detectArtProtocol()
+	updateCellSize()
+
 	ti := textinput.New()
 	ti.Placeholder = "Search songs..."
 	ti.Focus()
@@ -45,6 +48,7 @@ func InitialModel() model {
 		discordRPC:         api.AppConfig.App.DiscordRPC,
 		notify:             api.AppConfig.App.Notifications,
 		paneCache:          &paneCache{},
+		artCache:           &artCache{},
 	}
 }
 
