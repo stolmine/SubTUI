@@ -75,8 +75,9 @@ func adjustAutoDJContrast(m model, delta float64) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
+	// Snap to the step, then to 2 decimals so the saved value stays clean
 	c := math.Round((api.AppConfig.AutoDJ.Contrast+delta)/autoDJContrastStep) * autoDJContrastStep
-	api.AppConfig.AutoDJ.Contrast = math.Max(0, math.Min(1, c))
+	api.AppConfig.AutoDJ.Contrast = math.Max(0, math.Min(1, math.Round(c*100)/100))
 
 	return m, saveConfigCmd()
 }
