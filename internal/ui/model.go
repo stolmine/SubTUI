@@ -175,6 +175,7 @@ type randomAlbumMsg struct {
 type shuffledSongsMsg struct {
 	songs      []api.Song
 	updateView bool
+	limit      int // max tracks to queue after shuffling; 0 = all
 }
 
 type starredResultMsg struct {

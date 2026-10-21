@@ -181,6 +181,9 @@ func (m model) handlesKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	}
 
 	if keyMatches(key, api.AppConfig.Keybinds.Media.Shuffle) {
+		if res, cmd, ok := shuffleNavItem(m); ok {
+			return res, cmd
+		}
 		return mediaShuffle(m), nil
 	}
 
@@ -491,6 +494,34 @@ func toggleSelection(m model) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+// shuffleNavItem replaces the queue with the highlighted album, artist or
+// playlist, shuffled; ok is false when nothing like that is highlighted.
+// In the queue view the shuffle key always shuffles the queue instead.
+func shuffleNavItem(m model) (tea.Model, tea.Cmd, bool) {
+	if m.viewMode == viewQueue {
+		return m, nil, false
+	}
+
+	switch m.focus {
+	case focusMain:
+		switch {
+		case m.displayMode == displayAlbums && m.cursorMain < len(m.albums) && m.albums[m.cursorMain].ID != "":
+			m.loading = true
+			return m, getAlbumSongs(m.albums[m.cursorMain].ID, true), true
+		case m.displayMode == displayArtist && m.cursorMain < len(m.artists) && m.artists[m.cursorMain].ID != "":
+			m.loading = true
+			return m, shuffleArtistCmd(m.artists[m.cursorMain].ID), true
+		}
+
+	case focusSidebar:
+		if i := m.cursorSide - len(albumTypes); i >= 0 && i < len(m.playlists) && m.playlists[i].ID != "" {
+			return m, shufflePlaylistCmd(m.playlists[i].ID), true
+		}
+	}
+
+	return m, nil, false
+}
+
 func playShuffled(m model) (tea.Model, tea.Cmd) {
 	switch m.focus {
 	case focusMain:
@@ -498,6 +529,12 @@ func playShuffled(m model) (tea.Model, tea.Cmd) {
 			m.loading = true
 
 			return m, getAlbumSongs(m.albums[m.cursorMain].ID, true)
+		}
+
+		if m.displayMode == displayArtist && m.cursorMain < len(m.artists) && (m.artists[m.cursorMain]).ID != "" {
+			m.loading = true
+
+			return m, shuffleArtistCmd(m.artists[m.cursorMain].ID)
 		}
 
 	case focusSidebar:

@@ -616,6 +616,10 @@ func (m model) handleShuffledSongs(msg shuffledSongsMsg) (tea.Model, tea.Cmd) {
 		shuffledQueue[i], shuffledQueue[j] = shuffledQueue[j], shuffledQueue[i]
 	})
 
+	if msg.limit > 0 && len(shuffledQueue) > msg.limit {
+		shuffledQueue = shuffledQueue[:msg.limit]
+	}
+
 	m.queue = shuffledQueue
 	m.loading = false
 

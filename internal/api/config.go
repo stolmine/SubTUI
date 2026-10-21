@@ -66,6 +66,7 @@ type App struct {
 	DiscordRPC      bool   `toml:"discord_rich_presence"`
 	MouseSupport    bool   `toml:"mouse_support"`
 	Volume          int    `toml:"default_volume" comment:"0-100 for a preset initial volume, -1 to disable"`
+	ShuffleLimit    int    `toml:"shuffle_playlist_limit" comment:"Max tracks queued when shuffle-playing a playlist, picked at random (0 = no limit)"`
 }
 
 type Theme struct {

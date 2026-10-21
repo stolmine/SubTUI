@@ -61,7 +61,7 @@ func getAlbumSongs(albumID string, shuffled bool) tea.Cmd {
 		}
 
 		if shuffled {
-			return shuffledSongsMsg{songs, false}
+			return shuffledSongsMsg{songs: songs}
 		} else {
 			return songsResultMsg{songs}
 		}
@@ -128,10 +128,39 @@ func getPlaylistSongs(id string, shuffled bool) tea.Cmd {
 		}
 
 		if shuffled {
-			return shuffledSongsMsg{songs, true}
+			return shuffledSongsMsg{songs, true, api.AppConfig.App.ShuffleLimit}
 		} else {
 			return songsResultMsg{songs}
 		}
+	}
+}
+
+// shufflePlaylistCmd fetches a playlist to shuffle-play without opening it
+func shufflePlaylistCmd(id string) tea.Cmd {
+	return func() tea.Msg {
+		songs, err := api.SubsonicGetPlaylistSongs(id)
+		if err != nil {
+			return errMsg{err}
+		}
+		return shuffledSongsMsg{songs, false, api.AppConfig.App.ShuffleLimit}
+	}
+}
+
+// shuffleArtistCmd fetches every track of an artist's albums to shuffle-play
+func shuffleArtistCmd(artistID string) tea.Cmd {
+	return func() tea.Msg {
+		albums, err := api.SubsonicGetArtist(artistID)
+		if err != nil {
+			return errMsg{err}
+		}
+
+		var songs []api.Song
+		for _, album := range albums {
+			if albumSongs, err := api.SubsonicGetAlbum(album.ID); err == nil {
+				songs = append(songs, albumSongs...)
+			}
+		}
+		return shuffledSongsMsg{songs: songs}
 	}
 }
 

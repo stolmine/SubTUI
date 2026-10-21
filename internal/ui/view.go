@@ -1306,7 +1306,7 @@ func helpViewContent() string {
 		line(keys(api.AppConfig.Keybinds.Media.PlayPause), "Play/Pause"),
 		line(keys(api.AppConfig.Keybinds.Media.Next), "Next song"),
 		line(keys(api.AppConfig.Keybinds.Media.Prev), "Prev song"),
-		line(keys(api.AppConfig.Keybinds.Media.Shuffle), "Shuffle"),
+		line(keys(api.AppConfig.Keybinds.Media.Shuffle), "Shuffle queue / item"),
 		line(keys(api.AppConfig.Keybinds.Media.PlayRandomAlbum), "Play random album"),
 		line(keys(api.AppConfig.Keybinds.Media.Loop), "Loop mode"),
 		line(keys(api.AppConfig.Keybinds.Media.Restart), "Restart song"),
