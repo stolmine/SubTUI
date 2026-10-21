@@ -9,7 +9,6 @@ require (
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/charmbracelet/x/mosaic v0.0.0-20260305213658-fe36e8c10185
-	github.com/gdrens/mpv v0.0.0-20220831113119-9a418870d1b5
 	github.com/gen2brain/beeep v0.11.2
 	github.com/godbus/dbus/v5 v5.2.2
 	github.com/lrstanley/bubblezone v1.0.0

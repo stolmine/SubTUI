@@ -235,7 +235,7 @@ func (m model) handleLoginResult(msg loginResultMsg) (tea.Model, tea.Cmd) {
 	m.loginErr = ""
 
 	return m, tea.Batch(
-		syncPlayerCmd(),
+		waitPlayerChangeCmd(),
 		getPlaylists(),
 		getPlayQueue(),
 		getStarredCmd(),
@@ -269,6 +269,24 @@ func isPlaying(status player.PlayerStatus) bool {
 		!status.Paused
 }
 
+func (m model) handlePlayerChange(msg playerChangeMsg) (tea.Model, tea.Cmd) {
+	res, cmd := m.handleStatus(statusMsg(msg))
+	m = res.(model)
+
+	return m, tea.Batch(cmd, waitPlayerChangeCmd(), m.schedulePositionTick())
+}
+
+func (m model) handlePositionTick(msg positionTickMsg) (tea.Model, tea.Cmd) {
+	if msg.gen != m.positionTickGen {
+		return m, nil // superseded by a newer tick or a player change
+	}
+
+	res, cmd := m.handleStatus(statusMsg(msg.status))
+	m = res.(model)
+
+	return m, tea.Batch(cmd, m.schedulePositionTick())
+}
+
 func (m model) handleStatus(msg statusMsg) (tea.Model, tea.Cmd) {
 	previousStatus := m.playerStatus
 	m.playerStatus = player.PlayerStatus(msg)
@@ -278,7 +296,6 @@ func (m model) handleStatus(msg statusMsg) (tea.Model, tea.Cmd) {
 	songChanged := previousStatus.Path != m.playerStatus.Path
 
 	var cmds []tea.Cmd
-	cmds = append(cmds, syncPlayerCmd())
 
 	queueEnded := m.playerStatus.Path == "" || m.playerStatus.Path == "<nil>" || len(m.queue) == 0
 

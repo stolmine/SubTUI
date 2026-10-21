@@ -28,8 +28,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case errMsg:
 		return m.handleErr(msg)
 
-	case statusMsg:
-		return m.handleStatus(msg)
+	case playerChangeMsg:
+		return m.handlePlayerChange(msg)
+
+	case positionTickMsg:
+		return m.handlePositionTick(msg)
 
 	case songsResultMsg:
 		return m.handleSongResult(msg)

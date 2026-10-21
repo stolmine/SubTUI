@@ -55,6 +55,7 @@ type model struct {
 	scrobbled          bool
 	loginErr           string
 	windowTitle        string
+	positionTickGen    int
 	discordRPC         bool
 	notify             bool
 
@@ -174,6 +175,14 @@ type errMsg struct {
 }
 
 type statusMsg player.PlayerStatus
+
+// playerChangeMsg carries the player status after mpv reported a change
+type playerChangeMsg player.PlayerStatus
+
+type positionTickMsg struct {
+	gen    int
+	status player.PlayerStatus
+}
 
 type SetDBusMsg struct {
 	Instance *integration.Instance
