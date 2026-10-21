@@ -15,7 +15,6 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/x/mosaic"
-	"github.com/gen2brain/beeep"
 	zone "github.com/lrstanley/bubblezone"
 )
 
@@ -378,15 +377,13 @@ func (m model) handleStatus(msg statusMsg) (tea.Model, tea.Cmd) {
 		// System notification
 		if m.notify {
 			go func() {
-				artBytes, err := api.SubsonicCoverArt(currentSong.ID, 50)
+				artBytes, _ := api.SubsonicCoverArt(currentSong.ID, 128)
 
 				title := "SubTUI"
 				description := fmt.Sprintf("Playing %s - %s", currentSong.Title, currentSong.Artist)
 
-				if err != nil {
-					_ = beeep.Notify(title, description, "")
-				} else {
-					_ = beeep.Notify(title, description, artBytes)
+				if err := integration.NotifyTrack(title, description, artBytes); err != nil {
+					log.Printf("[Notify] %v", err)
 				}
 			}()
 		}

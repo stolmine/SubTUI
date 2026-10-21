@@ -52,6 +52,7 @@ type App struct {
 	ReplayGain      string `toml:"replaygain" comment:"Type of replaygain: 'track', 'album', 'no' https://mpv.io/manual/stable/#options-replaygain"`
 	GaplessPlayBack string `toml:"gapless_playback" comment:"Type of gapless playback: 'yes', 'no', 'weak' https://mpv.io/manual/stable/#options-gapless-audio"`
 	Notifications   bool   `toml:"desktop_notifications"`
+	NotifyClickCmd  string `toml:"notification_click_command" comment:"Shell command run when a track notification is clicked (Linux); SUBTUI_PID is set. Empty: no click action"`
 	DiscordRPC      bool   `toml:"discord_rich_presence"`
 	MouseSupport    bool   `toml:"mouse_support"`
 	Volume          int    `toml:"default_volume" comment:"0-100 for a preset initial volume, -1 to disable"`

@@ -82,6 +82,8 @@ func main() {
 	// Init variables
 	ui.InitStyles()
 	beeep.AppName = "SubTUI"
+	integration.SetNotificationClickCommand(api.AppConfig.App.NotifyClickCmd)
+	defer integration.CloseNotifier()
 
 	// Quiet MPV when TUI is killed
 	defer player.ShutdownPlayer()
