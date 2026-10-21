@@ -44,6 +44,7 @@ func InitialModel() model {
 		helpModel:          NewHelpModel(),
 		discordRPC:         api.AppConfig.App.DiscordRPC,
 		notify:             api.AppConfig.App.Notifications,
+		paneCache:          &paneCache{},
 	}
 }
 

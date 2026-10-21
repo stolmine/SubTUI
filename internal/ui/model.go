@@ -56,6 +56,9 @@ type model struct {
 	loginErr           string
 	windowTitle        string
 	positionTickGen    int
+
+	// Rendered header and center panes, shared by all copies of the model
+	paneCache *paneCache
 	discordRPC         bool
 	notify             bool
 
@@ -175,6 +178,11 @@ type errMsg struct {
 }
 
 type statusMsg player.PlayerStatus
+
+type paneCache struct {
+	valid       bool
+	top, center string
+}
 
 // playerChangeMsg carries the player status after mpv reported a change
 type playerChangeMsg player.PlayerStatus

@@ -5,7 +5,26 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+// Update invalidates the pane cache after every message except position
+// ticks that kept the same song: those only change playerStatus, which the
+// cached panes (header, sidebar, main list) don't read.
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	prevSong, prevIndex, prevLen := m.lastPlayedSongPath, m.queueIndex, len(m.queue)
+
+	res, cmd := m.update(msg)
+
+	if next, ok := res.(model); ok && next.paneCache != nil {
+		_, tick := msg.(positionTickMsg)
+		if !tick || next.lastPlayedSongPath != prevSong || next.queueIndex != prevIndex || len(next.queue) != prevLen {
+			next.paneCache.valid = false
+		}
+		return next, cmd
+	}
+
+	return res, cmd
+}
+
+func (m model) update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {

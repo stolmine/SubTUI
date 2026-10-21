@@ -92,6 +92,29 @@ func (m model) BaseView() string {
 	sidebarWidth := int(float64(m.width) * 0.25)
 	mainWidth := m.width - sidebarWidth - 4
 
+	topView, centerView := m.cachedPanes(headerHeight, mainHeight, sidebarWidth, mainWidth)
+
+	// FOOTER
+	footerView := m.buildFooterBorder().
+		Width(m.width - 2).
+		Height(footerHeight).
+		Render(footerContent(m))
+
+	// COMBINE ALL VERTICALLY
+	return lipgloss.JoinVertical(lipgloss.Left,
+		topView,
+		centerView,
+		footerView,
+	)
+}
+
+// cachedPanes returns the header and the sidebar/main row, reusing the last
+// render when Update left the cache valid (see Update).
+func (m model) cachedPanes(headerHeight, mainHeight, sidebarWidth, mainWidth int) (string, string) {
+	if m.paneCache != nil && m.paneCache.valid {
+		return m.paneCache.top, m.paneCache.center
+	}
+
 	// HEADER
 	headerBorder := borderStyle
 	if m.focus == focusSearch {
@@ -139,18 +162,11 @@ func (m model) BaseView() string {
 	// Join sidebar and main view
 	centerView := lipgloss.JoinHorizontal(lipgloss.Top, leftPane, rightPane)
 
-	// FOOTER
-	footerView := m.buildFooterBorder().
-		Width(m.width - 2).
-		Height(footerHeight).
-		Render(footerContent(m))
+	if m.paneCache != nil {
+		m.paneCache.top, m.paneCache.center, m.paneCache.valid = topView, centerView, true
+	}
 
-	// COMBINE ALL VERTICALLY
-	return lipgloss.JoinVertical(lipgloss.Left,
-		topView,
-		centerView,
-		footerView,
-	)
+	return topView, centerView
 }
 
 // Generate the login view
