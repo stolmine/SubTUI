@@ -56,11 +56,11 @@ type model struct {
 	loginErr           string
 	windowTitle        string
 	positionTickGen    int
+	discordRPC         bool
+	notify             bool
 
 	// Rendered header and center panes, shared by all copies of the model
 	paneCache *paneCache
-	discordRPC         bool
-	notify             bool
 
 	// Integrations
 	dbusInstance    *integration.Instance
