@@ -315,7 +315,7 @@ func SetVolume(volume int) {
 }
 
 // Changes is signalled (coalesced) whenever mpv reports a settled state
-// change: a file finished loading, a seek completed, pause/volume/metadata
+// change: playback (re)started after a file load or seek, pause or volume
 // changed, or playback went idle. Position updates are not signalled.
 func Changes() <-chan struct{} {
 	return changes
@@ -369,14 +369,21 @@ func handleEvent(msg ipcMessage) {
 		}
 		stateMu.Unlock()
 
-		// path/duration/title flicker to nil between gapless files; the
-		// file-loaded event that follows is the settled point
+		// path/duration/title/metadata all flicker to nil while the next
+		// file opens (the title is briefly its URL); the file-loaded event
+		// that follows is the settled point
 		switch msg.Name {
-		case "pause", "volume", "idle-active", "metadata/by-key/artist", "metadata/by-key/album":
+		case "pause", "volume":
 			notifyChange()
+		case "idle-active":
+			if idle, _ := msg.Data.(bool); idle {
+				notifyChange() // leaving idle is reported by playback-restart
+			}
 		}
 
-	case "file-loaded", "playback-restart":
+	// playback-restart follows file-loaded once duration and title are set
+	// (and ends every seek); notifying at file-loaded showed the URL title
+	case "playback-restart":
 		notifyChange()
 	}
 }
