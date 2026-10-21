@@ -157,6 +157,7 @@ type LibraryKeybinds struct {
 	AddRating           []string `toml:"add_rating"`
 	GoToAlbum           []string `toml:"go_to_album"`
 	GoToArtist          []string `toml:"go_to_artist"`
+	GoToCurrentAlbum    []string `toml:"go_to_current_album"`
 	Rate0               []string `toml:"rate_0"`
 	Rate1               []string `toml:"rate_1"`
 	Rate2               []string `toml:"rate_2"`

@@ -149,6 +149,10 @@ func (m model) handlesKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return toggleAddRatingPopup(m), nil
 	}
 
+	if keyMatches(key, api.AppConfig.Keybinds.Library.GoToCurrentAlbum) {
+		return displayAlbumOfCurrent(m)
+	}
+
 	if keyMatches(key, api.AppConfig.Keybinds.Library.Rate0) {
 		return setRating(m, 0)
 	}
@@ -774,6 +778,45 @@ func displayAlbumFromSelected(m model) (tea.Model, tea.Cmd) {
 	m.cursorMain = 0
 	m.mainOffset = 0
 	m.lastSearchQuery = ""
+
+	return m, getAlbumSongs(id, false)
+}
+
+// displayAlbumOfCurrent jumps to the album of the currently PLAYING track,
+// regardless of focus or what is hovered/selected (unlike displayAlbumFromSelected,
+// which follows the cursor). Bound to Library.GoToCurrentAlbum (default ctrl+l).
+func displayAlbumOfCurrent(m model) (tea.Model, tea.Cmd) {
+	// Album of the currently playing song
+	if m.queueIndex < 0 || m.queueIndex >= len(m.queue) {
+		return m, nil
+	}
+	id := m.queue[m.queueIndex].AlbumID
+
+	// Return on no ID
+	if id == "" {
+		return m, nil
+	}
+
+	// Reset model
+	m.loading = true
+
+	// Save state (so Back returns to where you were)
+	m.displayModePrev = m.displayMode
+	m.songsPrev = m.songs
+	m.cursorMainPrev = m.cursorMain
+	m.mainOffsetPrev = m.mainOffset
+
+	// Set new state — focus the main list so the album is immediately navigable
+	m.focus = focusMain
+	m.viewMode = viewList
+	m.displayMode = displaySongs
+	m.songs = nil
+	m.cursorMain = 0
+	m.mainOffset = 0
+	m.lastSearchQuery = ""
+
+	// Reset selection
+	m = resetSelection(m)
 
 	return m, getAlbumSongs(id, false)
 }

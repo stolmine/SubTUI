@@ -1226,6 +1226,7 @@ func helpViewContent() string {
 		line(keys(api.AppConfig.Keybinds.Library.AddRating), "Add rating"),
 		line(keys(api.AppConfig.Keybinds.Library.GoToAlbum), "Go to album"),
 		line(keys(api.AppConfig.Keybinds.Library.GoToArtist), "Go to artist"),
+		line(keys(api.AppConfig.Keybinds.Library.GoToCurrentAlbum), "Go to current track's album"),
 		line(keys(api.AppConfig.Keybinds.Library.SortPlaylistSongs), "Sort playlist songs"),
 		line(keys(api.AppConfig.Keybinds.Library.ToggleSortDirection), "Toggle sort direction"),
 		line(keys(api.AppConfig.Keybinds.Library.Rate0), "Rate 0"),
