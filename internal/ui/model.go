@@ -53,6 +53,7 @@ type model struct {
 	loading            bool
 	lastPlayedSongPath string
 	scrobbled          bool
+	scrobbleState      int
 	loginErr           string
 	windowTitle        string
 	positionTickGen    int
@@ -149,6 +150,19 @@ type artistsResultMsg struct {
 
 type playlistResultMsg struct {
 	playlists []api.Playlist
+}
+
+// Scrobble indicator states for the playing song
+const (
+	scrobbleWaiting = iota // not played long enough yet
+	scrobbleSending
+	scrobbleDone // server accepted the scrobble
+	scrobbleFailed
+)
+
+type scrobbleResultMsg struct {
+	id  string
+	err error
 }
 
 // randomAlbumMsg carries the tracks of a random album to play in order

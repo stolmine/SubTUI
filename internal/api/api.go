@@ -332,7 +332,9 @@ func SubsonicStream(id string) string {
 	return fullUrl
 }
 
-func SubsonicScrobble(id string, submission bool) {
+// SubsonicScrobble reports a play (submission) or now-playing to the
+// server, which forwards it to Last.fm / ListenBrainz if configured
+func SubsonicScrobble(id string, submission bool) error {
 	time := strconv.FormatInt(time.Now().UTC().UnixMilli(), 10)
 
 	params := url.Values{
@@ -341,7 +343,18 @@ func SubsonicScrobble(id string, submission bool) {
 		"submission": {strconv.FormatBool(submission)},
 	}
 
-	_, _ = subsonicGET("/scrobble", params)
+	data, err := subsonicGET("/scrobble", params)
+	if err != nil {
+		return err
+	}
+	if data.Response.Status != "ok" {
+		if data.Response.Error != nil {
+			return fmt.Errorf("scrobble: %s", data.Response.Error.Message)
+		}
+		return fmt.Errorf("scrobble: status %q", data.Response.Status)
+	}
+
+	return nil
 }
 
 func SubsonicCoverArtUrl(id string, size int) string {

@@ -178,6 +178,25 @@ func quitConfirmContent() string {
 	)
 }
 
+// scrobbleGlyph is the footer scrobble indicator for the playing song:
+// open until it has played long enough, filled once the server accepted it
+func (m model) scrobbleGlyph() string {
+	if len(m.queue) == 0 || m.lastPlayedSongPath == "" {
+		return ""
+	}
+
+	switch m.scrobbleState {
+	case scrobbleSending:
+		return "◌"
+	case scrobbleDone:
+		return "●"
+	case scrobbleFailed:
+		return "✕"
+	default:
+		return "○"
+	}
+}
+
 // Generate the login view
 func loginView(m model) string {
 	errorStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("196")).Bold(true)
@@ -704,6 +723,10 @@ func footerInformation(m model, width int) string {
 		notifcationStatus = "[Silent]"
 	}
 
+	if glyph := m.scrobbleGlyph(); glyph != "" {
+		notifcationStatus = strings.TrimSpace(notifcationStatus + " " + glyph)
+	}
+
 	topRowGap := width - runewidth.StringWidth(songTitle) - runewidth.StringWidth(notifcationStatus)
 	if topRowGap < 0 {
 		topRowGap = 0
@@ -990,6 +1013,10 @@ func mediaPlayerSideSongContent(m model, width int, height int) string {
 		notificationStatus = "[Silent]"
 	}
 
+	if glyph := m.scrobbleGlyph(); glyph != "" {
+		notificationStatus = strings.TrimSpace(notificationStatus + " " + glyph)
+	}
+
 	switch m.loopMode {
 	case LoopNone:
 		loopStatus = ""
@@ -1010,9 +1037,9 @@ func mediaPlayerSideSongContent(m model, width int, height int) string {
 	statusAvailableWidth := width - 4 // 2x 2 padding
 	statusWidth := statusAvailableWidth / 3
 
-	notificationGap = (statusWidth - len(notificationStatus)) / 2
+	notificationGap = (statusWidth - runewidth.StringWidth(notificationStatus)) / 2
 	loopGap = (statusWidth - runewidth.StringWidth(loopStatus)) / 2
-	volumeGap = (statusWidth - len(volumeStatus)) / 2
+	volumeGap = (statusWidth - runewidth.StringWidth(volumeStatus)) / 2
 
 	if notificationGap < 0 {
 		notificationGap = 0

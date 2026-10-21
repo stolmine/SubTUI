@@ -360,9 +360,10 @@ func (m model) handleStatus(msg statusMsg) (tea.Model, tea.Cmd) {
 		currentSong := m.queue[m.queueIndex]
 		m.lastPlayedSongPath = m.playerStatus.Path // Update previous song
 		m.scrobbled = false                        // Reset scrobble status
+		m.scrobbleState = scrobbleWaiting
 
 		// Update current scroble (just the playing now, not a submission)
-		go api.SubsonicScrobble(currentSong.ID, false)
+		go func() { _ = api.SubsonicScrobble(currentSong.ID, false) }()
 
 		// Setup metadata
 		metadata := integration.Metadata{
@@ -443,13 +444,30 @@ func (m model) handleStatus(msg statusMsg) (tea.Model, tea.Cmd) {
 
 			if pos >= target {
 				m.scrobbled = true
+				m.scrobbleState = scrobbleSending
 
-				go api.SubsonicScrobble(currentSong.ID, true)
+				cmds = append(cmds, scrobbleCmd(currentSong.ID))
 			}
 		}
 	}
 
 	return m, tea.Batch(cmds...)
+}
+
+func (m model) handleScrobbleResult(msg scrobbleResultMsg) (tea.Model, tea.Cmd) {
+	// Ignore results for a song that is no longer playing
+	if len(m.queue) == 0 || m.queueIndex < 0 || m.queueIndex >= len(m.queue) || m.queue[m.queueIndex].ID != msg.id {
+		return m, nil
+	}
+
+	if msg.err != nil {
+		m.scrobbleState = scrobbleFailed
+		m.err = msg.err
+	} else {
+		m.scrobbleState = scrobbleDone
+	}
+
+	return m, nil
 }
 
 func (m model) handleSongResult(msg songsResultMsg) (tea.Model, tea.Cmd) {

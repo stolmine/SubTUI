@@ -68,6 +68,12 @@ func getAlbumSongs(albumID string, shuffled bool) tea.Cmd {
 	}
 }
 
+func scrobbleCmd(id string) tea.Cmd {
+	return func() tea.Msg {
+		return scrobbleResultMsg{id: id, err: api.SubsonicScrobble(id, true)}
+	}
+}
+
 func playRandomAlbumCmd() tea.Cmd {
 	return func() tea.Msg {
 		album, err := api.SubsonicGetRandomAlbum()

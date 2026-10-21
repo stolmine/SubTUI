@@ -80,6 +80,9 @@ func (m model) update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case autoDJErrMsg:
 		return m.handleAutoDJErr(msg)
 
+	case scrobbleResultMsg:
+		return m.handleScrobbleResult(msg)
+
 	case randomAlbumMsg:
 		return m.handleRandomAlbum(msg)
 
