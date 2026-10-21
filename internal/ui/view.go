@@ -651,7 +651,9 @@ func footerContent(m model) string {
 		infoText := footerInformation(m, m.width-16)
 
 		if useImageArt() {
-			cols, rows := fitSquareArt(m.width/4, footerArtRows)
+			// Same height as the info block, so the art lines up with the
+			// title and the progress bar
+			cols, rows := fitSquareArt(m.width/4, lipgloss.Height(infoText))
 			albumArt = m.artPlaceholder(cols, rows)
 			infoText = footerInformation(m, m.width-8-cols)
 		}

@@ -28,7 +28,6 @@ const (
 	artSentinel = ''
 
 	artFetchSizeImage  = 1200 // px, cover art requested for image mode
-	footerArtRows      = 5    // footer height minus its top padding line
 	artFetchSizeMosaic = 500
 )
 
