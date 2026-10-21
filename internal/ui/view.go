@@ -770,19 +770,21 @@ func footerInformation(m model, width int) string {
 		loopStatus = strings.TrimSpace(dj + " " + loopStatus)
 	}
 
-	middleRowGap := width - runewidth.StringWidth(songAlbumArtistInfo) - runewidth.StringWidth(loopStatus) - 1 - runewidth.StringWidth(volumeStatus)
+	// Right-aligned statuses; empty ones take no space, so the last one
+	// ends at the edge like the scrobble indicator above
+	middleStatus := strings.TrimSpace(loopStatus + " " + volumeStatus)
+
+	middleRowGap := width - runewidth.StringWidth(songAlbumArtistInfo) - runewidth.StringWidth(middleStatus)
 	if middleRowGap < 0 {
 		middleRowGap = 0
 	}
 
-	truncatedSongAlbumArtistInfo := truncate(songAlbumArtistInfo, width-runewidth.StringWidth(loopStatus)-1-runewidth.StringWidth(volumeStatus))
+	truncatedSongAlbumArtistInfo := truncate(songAlbumArtistInfo, width-runewidth.StringWidth(middleStatus))
 	middleRow = lipgloss.JoinHorizontal(
 		lipgloss.Center,
 		truncatedSongAlbumArtistInfo,
 		strings.Repeat(" ", middleRowGap),
-		loopStatus,
-		" ",
-		volumeStatus,
+		middleStatus,
 	)
 
 	// Bottom row
