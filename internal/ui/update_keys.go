@@ -2,7 +2,6 @@ package ui
 
 import (
 	"math/rand"
-	"sort"
 	"strings"
 
 	"github.com/MattiaPun/SubTUI/v2/internal/api"
@@ -21,6 +20,10 @@ func (m model) handlesKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	if m.confirmQuit {
 		return confirmQuit(m, key)
+	}
+
+	if m.sortPending {
+		return handleSortKey(m, key), nil
 	}
 
 	if m.viewMode == viewLogin {
@@ -149,12 +152,11 @@ func (m model) handlesKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return displayAlbumOfCurrent(m)
 	}
 
-	if keyMatches(key, api.AppConfig.Keybinds.Library.SortPlaylistSongs) {
-		return toggleSongSort(m), nil
-	}
-
-	if keyMatches(key, api.AppConfig.Keybinds.Library.ToggleSortDirection) {
-		return toggleSortDirection(m), nil
+	if keyMatches(key, api.AppConfig.Keybinds.Library.Sort) {
+		if m.focus == focusSearch {
+			return typeInput(m, msg)
+		}
+		return openSortPopup(m), nil
 	}
 
 	// MEDIA KEYBINDS
@@ -540,6 +542,8 @@ func goBack(m model) (tea.Model, tea.Cmd) {
 	tempArtists := m.artists
 	m.artists = m.artistsPrev
 	m.artistsPrev = tempArtists
+
+	m.applySorts() // the sort may have changed since this list was shown
 
 	// Swap offsets
 	tempMainOffset := m.mainOffset
@@ -1395,23 +1399,6 @@ func mediaShowFavorites(m model, msg tea.Msg) (model, tea.Cmd) {
 	return m, openLikedSongsCmd()
 }
 
-func toggleSongSort(m model) model {
-	totalModes := 8
-	m.songSortBy = (m.songSortBy + 1) % totalModes
-
-	sortSongs(m.songs, m.songSortBy, m.songSortAsc)
-	return m
-}
-
-func toggleSortDirection(m model) model {
-	if m.songSortBy == api.SongSortNone {
-		return m
-	}
-	m.songSortAsc = !m.songSortAsc
-	sortSongs(m.songs, m.songSortBy, m.songSortAsc)
-	return m
-}
-
 func toggleAddToPlaylistPopup(m model) model {
 	if m.focus == focusMain && m.displayMode == displaySongs &&
 		((m.viewMode == viewList && len(m.songs) > 0) || (m.viewMode == viewQueue && len(m.queue) > 0)) {
@@ -1943,38 +1930,6 @@ func resetSelection(m model) model {
 }
 
 // Helper for sorting songs
-func sortSongs(songs []api.Song, sortBy int, asc bool) {
-	if sortBy == api.SongSortNone {
-		return
-	}
-
-	sort.Slice(songs, func(i, j int) bool {
-		var cmp bool
-
-		switch sortBy {
-		case api.SongSortTitle:
-			cmp = songs[i].Title < songs[j].Title
-		case api.SongSortArtist:
-			cmp = songs[i].Artist < songs[j].Artist
-		case api.SongSortAlbum:
-			cmp = songs[i].Album < songs[j].Album
-		case api.SongSortDuration:
-			cmp = songs[i].Duration < songs[j].Duration
-		case api.SongSortRating:
-			cmp = songs[i].Rating < songs[j].Rating
-		case api.SongSortYear:
-			cmp = songs[i].Year < songs[j].Year
-		default:
-			return false
-		}
-
-		if asc {
-			return cmp
-		}
-		return !cmp
-	})
-}
-
 // Helper for getting the length of the list
 func _getMainListLength(m model) int {
 	switch m.displayMode {

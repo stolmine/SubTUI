@@ -173,12 +173,11 @@ type SearchKeybinds struct {
 }
 
 type LibraryKeybinds struct {
-	AddToPlaylist 	    []string `toml:"add_to_playlist"`
-	GoToAlbum           []string `toml:"go_to_album"`
-	GoToArtist          []string `toml:"go_to_artist"`
-	GoToCurrentAlbum    []string `toml:"go_to_current_album"`
-	SortPlaylistSongs   []string `toml:"sort_playlist_songs"`
-	ToggleSortDirection []string `toml:"toggle_sort_direction"`
+	AddToPlaylist    []string `toml:"add_to_playlist"`
+	GoToAlbum        []string `toml:"go_to_album"`
+	GoToArtist       []string `toml:"go_to_artist"`
+	GoToCurrentAlbum []string `toml:"go_to_current_album"`
+	Sort             []string `toml:"sort" comment:"Opens the sort popup; then a letter picks the field (uppercase reverses)"`
 }
 
 type MediaKeybinds struct {

@@ -18,12 +18,17 @@ func (m model) View() string {
 		return frame
 	}
 
-	return m.placeArt(frame, m.showHelp || m.showPlaylists || m.confirmQuit)
+	return m.placeArt(frame, m.showHelp || m.showPlaylists || m.confirmQuit || m.sortPending)
 }
 
 func (m model) view() string {
 	if m.width < 50 || m.height < 25 {
 		return viewToSmallContent(m)
+	}
+
+	if m.sortPending {
+		fg := ContentModel{Content: popupStyle.Render(m.sortPopupContent())}
+		return overlay.New(fg, BackgroundWrapper{RenderedView: m.BaseView()}, overlay.Center, overlay.Center, 0, 0).View()
 	}
 
 	if m.confirmQuit {
@@ -384,14 +389,6 @@ func mainSongsContent(m model, width int, height int) string {
 	case viewList:
 		target = m.songs
 		headerTitle = "TITLE"
-		sortLabel := api.SongSortLabels[m.songSortBy]
-		if sortLabel != "" && sortLabel != "None" {
-			order := "↑"
-			if !m.songSortAsc {
-				order = "↓"
-			}
-			headerTitle = fmt.Sprintf("TITLE   [%s %s]", sortLabel, order)
-		}
 		emptyStatus = "\n  Use the search bar to find songs..."
 	case viewQueue:
 		target = m.queue
@@ -634,8 +631,11 @@ func (m model) buildMainViewBorder(width int) lipgloss.Style {
 	listLen := _getMainListLength(m)
 	if listLen > 0 {
 		listStatus := fmt.Sprintf(" %d/%d ", m.cursorMain + 1, listLen)
+		if label := m.sortLabel(); label != "" {
+			listStatus = fmt.Sprintf(" %s · %d/%d ", label, m.cursorMain+1, listLen)
+		}
 		b := lipgloss.RoundedBorder()
-		topLeading := max(width - len(listStatus) - 2, 0)
+		topLeading := max(width - runewidth.StringWidth(listStatus) - 2, 0)
 		b.Top = strings.Repeat("─", topLeading) + listStatus + "──"
 		return base.Border(b)
 	}
@@ -1299,8 +1299,7 @@ func helpViewContent() string {
 		line(keys(api.AppConfig.Keybinds.Library.GoToAlbum), "Go to album"),
 		line(keys(api.AppConfig.Keybinds.Library.GoToArtist), "Go to artist"),
 		line(keys(api.AppConfig.Keybinds.Library.GoToCurrentAlbum), "Go to current track's album"),
-		line(keys(api.AppConfig.Keybinds.Library.SortPlaylistSongs), "Sort playlist songs"),
-		line(keys(api.AppConfig.Keybinds.Library.ToggleSortDirection), "Toggle sort direction"),
+		line(keys(api.AppConfig.Keybinds.Library.Sort), "Sort (then a field key)"),
 	)
 
 	mediaKeybinds := section("MEDIA",

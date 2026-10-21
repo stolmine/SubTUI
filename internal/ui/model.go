@@ -102,8 +102,10 @@ type model struct {
 	pageHasMore     bool
 
 	// Song sort mode (in a playlist)
-	songSortBy  int
-	songSortAsc bool
+	songSort    listSort
+	albumSort   listSort
+	artistSort  listSort
+	sortPending bool // sort popup open, waiting for the field key
 
 	// Selection state
 	showSelection   bool

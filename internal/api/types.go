@@ -74,6 +74,7 @@ type Artist struct {
 	Name       string `json:"name"`
 	AlbumCount int    `json:"albumCount"`
 	Rating     int    `json:"userRating"`
+	Pos        int    `json:"-"` // position in the server's order, for sorting
 }
 
 type Album struct {
@@ -87,6 +88,7 @@ type Album struct {
 	Rating    int    `json:"userRating"`
 	Duration  int    `json:"duration"`
 	Note      string `json:"comment"`
+	Pos       int    `json:"-"` // position in the server's order, for sorting
 }
 
 type Song struct {
@@ -107,27 +109,7 @@ type Song struct {
 	TrackNumber  int      `json:"track"`
 	DiscNumber   int      `json:"discNumber"`
 	Filtered     bool
-}
-
-// Sort modes for songs inside a playlist
-const (
-	SongSortNone     = 0
-	SongSortTitle    = 1
-	SongSortArtist   = 2
-	SongSortAlbum    = 3
-	SongSortDuration = 4
-	SongSortRating   = 5
-	SongSortYear     = 6
-)
-
-var SongSortLabels = map[int]string{
-	SongSortNone:     "None",
-	SongSortTitle:    "Title",
-	SongSortArtist:   "Artist",
-	SongSortAlbum:    "Album",
-	SongSortDuration: "Duration",
-	SongSortRating:   "Rating",
-	SongSortYear:     "Year",
+	Pos          int `json:"-"` // position in the server's order, for sorting
 }
 
 type Playlist struct {

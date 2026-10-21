@@ -477,15 +477,17 @@ func (m model) handleSongResult(msg songsResultMsg) (tea.Model, tea.Cmd) {
 	songs := applyExclusionFilters(m, msg.songs)
 
 	if m.pageOffset > 0 { // Append: paging
-		m.songs = append(m.songs, msg.songs...)
+		stampSongs(songs, len(m.songs))
+		m.songs = append(m.songs, songs...)
 	} else { // Replace: no paging
+		stampSongs(songs, 0)
 		m.songs = songs
 		m.cursorMain = 0
 		m.mainOffset = 0
 	}
 
 	// Apply current sort mode
-	sortSongs(m.songs, m.songSortBy, m.songSortAsc)
+	m.applySorts()
 
 	m.pageHasMore = (len(songs) == 150)
 
@@ -498,12 +500,16 @@ func (m model) handleAlbumResult(msg albumsResultMsg) (tea.Model, tea.Cmd) {
 	m.pageHasMore = (len(msg.albums) == 150)
 
 	if m.pageOffset > 0 { // Append: paging
+		stampAlbums(msg.albums, len(m.albums))
 		m.albums = append(m.albums, msg.albums...)
 	} else { // Replace: no paging
+		stampAlbums(msg.albums, 0)
 		m.albums = msg.albums
 		m.cursorMain = 0
 		m.mainOffset = 0
 	}
+
+	m.applySorts()
 
 	return m, nil
 }
@@ -514,12 +520,16 @@ func (m model) handleArtistsResult(msg artistsResultMsg) (tea.Model, tea.Cmd) {
 	m.pageHasMore = (len(msg.artists) == 150)
 
 	if m.pageOffset > 0 { // Append: paging
+		stampArtists(msg.artists, len(m.artists))
 		m.artists = append(m.artists, msg.artists...)
 	} else { // Replace: no paging
+		stampArtists(msg.artists, 0)
 		m.artists = msg.artists
 		m.cursorMain = 0
 		m.mainOffset = 0
 	}
+
+	m.applySorts()
 
 	return m, nil
 }
@@ -546,7 +556,9 @@ func (m model) handleViewStarredSongs(msg viewStarredSongsMsg) (tea.Model, tea.C
 		m.starredMap[a.ID] = true
 	}
 
+	stampSongs(msg.Songs, 0)
 	m.songs = msg.Songs
+	m.applySorts()
 	return m, nil
 }
 
@@ -584,6 +596,8 @@ func (m model) handleRandomAlbum(msg randomAlbumMsg) (tea.Model, tea.Cmd) {
 func (m model) handleShuffledSongs(msg shuffledSongsMsg) (tea.Model, tea.Cmd) {
 	if msg.updateView {
 		m.songs = msg.songs
+		stampSongs(m.songs, 0)
+		m.applySorts()
 	}
 
 	songs := applyExclusionFilters(m, msg.songs)
