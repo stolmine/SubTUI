@@ -87,6 +87,7 @@ type model struct {
 	showHelp        bool
 	showPlaylists   bool
 	showRating      bool
+	confirmQuit     bool
 	helpModel       HelpModel
 
 	// Pagination State

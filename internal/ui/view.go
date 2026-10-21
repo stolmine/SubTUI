@@ -18,6 +18,16 @@ func (m model) View() string {
 		return viewToSmallContent(m)
 	}
 
+	if m.confirmQuit {
+		bg := m.BaseView()
+		if m.showMediaPlayer {
+			bg = mediaPlayerContent(m)
+		}
+
+		fg := ContentModel{Content: popupStyle.Render(quitConfirmContent())}
+		return overlay.New(fg, BackgroundWrapper{RenderedView: bg}, overlay.Center, overlay.Center, 0, 0).View()
+	}
+
 	if m.showMediaPlayer {
 		content := mediaPlayerContent(m)
 
@@ -167,6 +177,15 @@ func (m model) cachedPanes(headerHeight, mainHeight, sidebarWidth, mainWidth int
 	}
 
 	return topView, centerView
+}
+
+func quitConfirmContent() string {
+	return lipgloss.JoinVertical(lipgloss.Center,
+		lipgloss.NewStyle().Bold(true).Render("Quit SubTUI?"),
+		"",
+		"[y] / [enter] quit",
+		subtleStyle.Render("any other key cancels"),
+	)
 }
 
 // Generate the login view

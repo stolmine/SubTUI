@@ -19,6 +19,10 @@ func (m model) handlesKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return hardQuit(m)
 	}
 
+	if m.confirmQuit {
+		return confirmQuit(m, key)
+	}
+
 	if m.viewMode == viewLogin {
 		return login(m, msg)
 	}
@@ -301,10 +305,23 @@ func hardQuit(m model) (tea.Model, tea.Cmd) {
 
 func quit(m model, msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.focus != focusSearch {
-		return m, tea.Quit
+		m.confirmQuit = true
+		return m, nil
 	} else {
 		return typeInput(m, msg)
 	}
+}
+
+// confirmQuit handles the key pressed while the quit prompt is open: y,
+// enter or the quit key again quits, anything else just closes the prompt
+func confirmQuit(m model, key string) (tea.Model, tea.Cmd) {
+	m.confirmQuit = false
+
+	if key == "y" || key == "Y" || key == "enter" || keyMatches(key, api.AppConfig.Keybinds.Global.Quit) {
+		return m, tea.Quit
+	}
+
+	return m, nil
 }
 
 func focusSearchBar(m model) model {
