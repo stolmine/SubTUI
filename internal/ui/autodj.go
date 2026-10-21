@@ -5,6 +5,7 @@ import (
 	"math"
 	"math/rand"
 	"path/filepath"
+	"strings"
 
 	"github.com/MattiaPun/SubTUI/v2/internal/api"
 	tea "github.com/charmbracelet/bubbletea"
@@ -201,6 +202,14 @@ func (m model) handleAutoDJSeed(msg autoDJSeedMsg) (tea.Model, tea.Cmd) {
 
 	api.AppConfig.AutoDJ.Enabled = true
 	m.queue = songs
+
+	// Seeded from the song that is already playing: keep it playing and
+	// only queue the recommendations after it
+	if msg.lead != nil && strings.Contains(m.playerStatus.Path, "id="+msg.lead.ID) {
+		m.queueIndex = 0
+		m.syncNextSong()
+		return m, tea.Batch(m.savePlayQueue(), saveConfigCmd())
+	}
 
 	return m, tea.Batch(m.playQueueIndex(0, false), saveConfigCmd())
 }
