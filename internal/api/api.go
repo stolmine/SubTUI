@@ -255,6 +255,26 @@ func SubsonicGetAlbumList(searchType string, offset int) ([]Album, error) {
 	return data.Response.AlbumList.Albums, nil
 }
 
+// SubsonicGetRandomAlbum returns one album picked at random by the server
+func SubsonicGetRandomAlbum() (Album, error) {
+	params := url.Values{
+		"type": {"random"},
+		"size": {"1"},
+	}
+
+	data, err := subsonicGET("/getAlbumList", params)
+	if err != nil {
+		return Album{}, err
+	}
+
+	albums := data.Response.AlbumList.Albums
+	if len(albums) == 0 {
+		return Album{}, fmt.Errorf("no albums in library")
+	}
+
+	return albums[0], nil
+}
+
 func SubsonicGetArtist(id string) ([]Album, error) {
 	params := url.Values{
 		"id": {id},

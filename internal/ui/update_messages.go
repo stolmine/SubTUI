@@ -542,6 +542,26 @@ func (m model) handleCoverArt(msg coverArtMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+// handleRandomAlbum replaces the queue with the album in track order,
+// skipping songs excluded by the filters, and starts playing it
+func (m model) handleRandomAlbum(msg randomAlbumMsg) (tea.Model, tea.Cmd) {
+	m.loading = false
+
+	var queue []api.Song
+	for _, song := range applyExclusionFilters(m, msg.songs) {
+		if !song.Filtered {
+			queue = append(queue, song)
+		}
+	}
+
+	if len(queue) == 0 {
+		return m, nil
+	}
+
+	m.queue = queue
+	return m, m.playQueueIndex(0, false)
+}
+
 func (m model) handleShuffledSongs(msg shuffledSongsMsg) (tea.Model, tea.Cmd) {
 	if msg.updateView {
 		m.songs = msg.songs

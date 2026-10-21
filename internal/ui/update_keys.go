@@ -214,6 +214,10 @@ func (m model) handlesKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return mediaShuffle(m), nil
 	}
 
+	if keyMatches(key, api.AppConfig.Keybinds.Media.PlayRandomAlbum) {
+		return mediaPlayRandomAlbum(m, msg)
+	}
+
 	if keyMatches(key, api.AppConfig.Keybinds.Media.Loop) {
 		return mediaToggleLoop(m), nil
 	}
@@ -1284,6 +1288,15 @@ func mediaSeekRewind(m model) model {
 	return m
 }
 
+func mediaPlayRandomAlbum(m model, msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.focus == focusSearch {
+		return typeInput(m, msg)
+	}
+
+	m.loading = true
+	return m, playRandomAlbumCmd()
+}
+
 func mediaShuffle(m model) model {
 	if m.focus != focusSearch {
 		if len(m.queue) < 2 {
@@ -1723,6 +1736,10 @@ func playerMenu(m model, msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	if keyMatches(key, api.AppConfig.Keybinds.Media.Shuffle) {
 		return mediaShuffle(m), nil
+	}
+
+	if keyMatches(key, api.AppConfig.Keybinds.Media.PlayRandomAlbum) {
+		return mediaPlayRandomAlbum(m, msg)
 	}
 
 	if keyMatches(key, api.AppConfig.Keybinds.Media.Loop) {

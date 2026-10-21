@@ -68,6 +68,22 @@ func getAlbumSongs(albumID string, shuffled bool) tea.Cmd {
 	}
 }
 
+func playRandomAlbumCmd() tea.Cmd {
+	return func() tea.Msg {
+		album, err := api.SubsonicGetRandomAlbum()
+		if err != nil {
+			return errMsg{err}
+		}
+
+		songs, err := api.SubsonicGetAlbum(album.ID)
+		if err != nil {
+			return errMsg{err}
+		}
+
+		return randomAlbumMsg{songs}
+	}
+}
+
 func getAlbumList(searchType string, offset int) tea.Cmd {
 	return func() tea.Msg {
 		albums, err := api.SubsonicGetAlbumList(searchType, offset)

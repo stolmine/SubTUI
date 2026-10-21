@@ -101,6 +101,7 @@ max_rating = 0 # Exclude songs with a rating less than or equal to this number (
   next                = ['n']
   prev                = ['b']
   shuffle             = ['S']
+  play_random_album   = ['r']
   loop                = ['L']
   restart             = ['w']
   rewind              = [',']

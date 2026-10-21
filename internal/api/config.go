@@ -175,6 +175,7 @@ type MediaKeybinds struct {
 	Next              []string `toml:"next"`
 	Prev              []string `toml:"prev"`
 	Shuffle           []string `toml:"shuffle"`
+	PlayRandomAlbum   []string `toml:"play_random_album"`
 	Loop              []string `toml:"loop"`
 	Restart           []string `toml:"restart"`
 	Rewind            []string `toml:"rewind"`

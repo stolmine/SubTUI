@@ -148,6 +148,11 @@ type playlistResultMsg struct {
 	playlists []api.Playlist
 }
 
+// randomAlbumMsg carries the tracks of a random album to play in order
+type randomAlbumMsg struct {
+	songs []api.Song
+}
+
 type shuffledSongsMsg struct {
 	songs      []api.Song
 	updateView bool
