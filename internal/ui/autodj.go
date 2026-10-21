@@ -131,15 +131,11 @@ func seedAutoDJ(m model) (tea.Model, tea.Cmd) {
 			}
 			seeds = songIDs(songs)
 		default:
-			albums, err := api.SubsonicGetArtist(artistID)
+			songs, err := api.SubsonicGetArtistSongs(artistID)
 			if err != nil {
 				return autoDJErrMsg{err}
 			}
-			for _, album := range albums {
-				if songs, err := api.SubsonicGetAlbum(album.ID); err == nil {
-					seeds = append(seeds, songIDs(songs)...)
-				}
-			}
+			seeds = songIDs(songs)
 		}
 
 		if len(seeds) > autoDJMaxSeeds {

@@ -149,16 +149,9 @@ func shufflePlaylistCmd(id string) tea.Cmd {
 // shuffleArtistCmd fetches every track of an artist's albums to shuffle-play
 func shuffleArtistCmd(artistID string) tea.Cmd {
 	return func() tea.Msg {
-		albums, err := api.SubsonicGetArtist(artistID)
+		songs, err := api.SubsonicGetArtistSongs(artistID)
 		if err != nil {
 			return errMsg{err}
-		}
-
-		var songs []api.Song
-		for _, album := range albums {
-			if albumSongs, err := api.SubsonicGetAlbum(album.ID); err == nil {
-				songs = append(songs, albumSongs...)
-			}
 		}
 		return shuffledSongsMsg{songs: songs}
 	}

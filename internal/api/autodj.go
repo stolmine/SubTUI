@@ -87,6 +87,39 @@ func SubsonicGetSong(id string) (Song, error) {
 	return data.Response.Song, nil
 }
 
+// SubsonicGetArtistSongs returns every track of an artist's albums, in
+// album order, fetching the albums concurrently
+func SubsonicGetArtistSongs(artistID string) ([]Song, error) {
+	albums, err := SubsonicGetArtist(artistID)
+	if err != nil {
+		return nil, err
+	}
+
+	perAlbum := make([][]Song, len(albums))
+	var wg sync.WaitGroup
+	sem := make(chan struct{}, 8)
+	for i, album := range albums {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+
+			if songs, err := SubsonicGetAlbum(album.ID); err == nil {
+				perAlbum[i] = songs
+			}
+		}()
+	}
+	wg.Wait()
+
+	var songs []Song
+	for _, s := range perAlbum {
+		songs = append(songs, s...)
+	}
+
+	return songs, nil
+}
+
 // SubsonicGetSongs fetches songs by id concurrently, keeping their order and
 // skipping any that fail
 func SubsonicGetSongs(ids []string) []Song {
