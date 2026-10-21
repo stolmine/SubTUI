@@ -27,6 +27,16 @@ type Config struct {
 	Filters  Filters  `toml:"filters"`
 	Keybinds Keybinds `toml:"keybinds"`
 	Columns  Columns  `toml:"columns"`
+	AutoDJ   AutoDJ   `toml:"autodj"`
+}
+
+type AutoDJ struct {
+	Enabled        bool    `toml:"enabled"`
+	RecommenderURL string  `toml:"recommender_url" comment:"Base URL of the vector AutoDJ recommender, e.g. 'http://host:8001'"`
+	RefillAt       int     `toml:"refill_at" comment:"Add tracks when this many or fewer are left after the current one"`
+	BatchSize      int     `toml:"batch_size" comment:"Tracks added per refill"`
+	SeedBatchSize  int     `toml:"seed_batch_size" comment:"Tracks queued when seeding a new session"`
+	Contrast       float64 `toml:"contrast" comment:"0 = consistency (hug the vibe), 1 = maximum variety"`
 }
 
 type ServerConfig struct {
@@ -123,6 +133,14 @@ type Keybinds struct {
 	Queue      QueueKeybinds      `toml:"queue"`
 	Favorites  FavoriteKeybinds   `toml:"favorites"`
 	Other      OtherKeybinds      `toml:"other"`
+	AutoDJ     AutoDJKeybinds     `toml:"autodj"`
+}
+
+type AutoDJKeybinds struct {
+	Toggle       []string `toml:"toggle"`
+	Seed         []string `toml:"seed"`
+	ContrastDown []string `toml:"contrast_down"`
+	ContrastUp   []string `toml:"contrast_up"`
 }
 
 type GlobalKeybinds struct {

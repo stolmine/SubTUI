@@ -743,6 +743,10 @@ func footerInformation(m model, width int) string {
 		volumeStatus = fmt.Sprintf("[%v%%]", m.playerStatus.Volume)
 	}
 
+	if dj := m.autoDJStatus(); dj != "" {
+		loopStatus = strings.TrimSpace(dj + " " + loopStatus)
+	}
+
 	middleRowGap := width - runewidth.StringWidth(songAlbumArtistInfo) - runewidth.StringWidth(loopStatus) - 1 - runewidth.StringWidth(volumeStatus)
 	if middleRowGap < 0 {
 		middleRowGap = 0
@@ -999,11 +1003,15 @@ func mediaPlayerSideSongContent(m model, width int, height int) string {
 		volumeStatus = fmt.Sprintf("[%v%%]", m.playerStatus.Volume)
 	}
 
+	if dj := m.autoDJStatus(); dj != "" {
+		loopStatus = strings.TrimSpace(dj + " " + loopStatus)
+	}
+
 	statusAvailableWidth := width - 4 // 2x 2 padding
 	statusWidth := statusAvailableWidth / 3
 
 	notificationGap = (statusWidth - len(notificationStatus)) / 2
-	loopGap = (statusWidth - len(loopStatus)) / 2
+	loopGap = (statusWidth - runewidth.StringWidth(loopStatus)) / 2
 	volumeGap = (statusWidth - len(volumeStatus)) / 2
 
 	if notificationGap < 0 {
@@ -1301,6 +1309,13 @@ func helpViewContent() string {
 		line(keys(api.AppConfig.Keybinds.Other.CreateShareLink), "Create share link"),
 	)
 
+	autoDJKeybinds := section("AUTODJ",
+		line(keys(api.AppConfig.Keybinds.AutoDJ.Toggle), "Toggle AutoDJ"),
+		line(keys(api.AppConfig.Keybinds.AutoDJ.Seed), "Seed from selection"),
+		line(keys(api.AppConfig.Keybinds.AutoDJ.ContrastDown), "Contrast -"),
+		line(keys(api.AppConfig.Keybinds.AutoDJ.ContrastUp), "Contrast +"),
+	)
+
 	columnLeft := lipgloss.JoinVertical(lipgloss.Left,
 		globalKeybinds,
 		"", // spacer
@@ -1313,6 +1328,8 @@ func helpViewContent() string {
 		mediaKeybinds,
 		"", // spacer
 		navigationKeybinds,
+		"", // spacer
+		autoDJKeybinds,
 	)
 
 	columnRight := lipgloss.JoinVertical(lipgloss.Left,

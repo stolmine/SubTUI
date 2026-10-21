@@ -71,6 +71,15 @@ func (m model) update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case coverArtMsg:
 		return m.handleCoverArt(msg)
 
+	case autoDJSeedMsg:
+		return m.handleAutoDJSeed(msg)
+
+	case autoDJRefillMsg:
+		return m.handleAutoDJRefill(msg)
+
+	case autoDJErrMsg:
+		return m.handleAutoDJErr(msg)
+
 	case randomAlbumMsg:
 		return m.handleRandomAlbum(msg)
 

@@ -63,6 +63,10 @@ type model struct {
 	paneCache *paneCache
 	artCache  *artCache
 
+	// AutoDJ request state (enabled and contrast live in api.AppConfig.AutoDJ)
+	autoDJFetching bool
+	autoDJFailed   bool
+
 	// Integrations
 	dbusInstance    *integration.Instance
 	discordInstance *integration.DiscordInstance

@@ -186,6 +186,10 @@ func (m model) handlesKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return mediaPlayRandomAlbum(m, msg)
 	}
 
+	if res, cmd, ok := autoDJKeys(m, key, msg); ok {
+		return res, cmd
+	}
+
 	if keyMatches(key, api.AppConfig.Keybinds.Media.Loop) {
 		return mediaToggleLoop(m), nil
 	}
@@ -1255,6 +1259,33 @@ func mediaSeekRewind(m model) model {
 	return m
 }
 
+// autoDJKeys handles the AutoDJ keybinds; ok is false for any other key
+func autoDJKeys(m model, key string, msg tea.Msg) (res tea.Model, cmd tea.Cmd, ok bool) {
+	bindings := api.AppConfig.Keybinds.AutoDJ
+	if !keyMatches(key, bindings.Toggle) && !keyMatches(key, bindings.Seed) &&
+		!keyMatches(key, bindings.ContrastDown) && !keyMatches(key, bindings.ContrastUp) {
+		return m, nil, false
+	}
+
+	if m.focus == focusSearch && !m.showMediaPlayer {
+		res, cmd = typeInput(m, msg)
+		return res, cmd, true
+	}
+
+	switch {
+	case keyMatches(key, bindings.Toggle):
+		res, cmd = toggleAutoDJ(m)
+	case keyMatches(key, bindings.Seed):
+		res, cmd = seedAutoDJ(m)
+	case keyMatches(key, bindings.ContrastDown):
+		res, cmd = adjustAutoDJContrast(m, -autoDJContrastStep)
+	default:
+		res, cmd = adjustAutoDJContrast(m, autoDJContrastStep)
+	}
+
+	return res, cmd, true
+}
+
 func mediaPlayRandomAlbum(m model, msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.focus == focusSearch {
 		return typeInput(m, msg)
@@ -1678,6 +1709,10 @@ func playerMenu(m model, msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	if keyMatches(key, api.AppConfig.Keybinds.Media.PlayRandomAlbum) {
 		return mediaPlayRandomAlbum(m, msg)
+	}
+
+	if res, cmd, ok := autoDJKeys(m, key, msg); ok {
+		return res, cmd
 	}
 
 	if keyMatches(key, api.AppConfig.Keybinds.Media.Loop) {

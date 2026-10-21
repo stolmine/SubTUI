@@ -16,6 +16,14 @@ highlight          = ['#874BFD', '#7D56F4']
 special            = ['#43BF6D', '#73F59F']
 filtered           = ['#A9A9A9', '#555555']
 
+[autodj]
+enabled = false
+recommender_url = '' # Base URL of the vector AutoDJ recommender, e.g. 'http://host:8001'
+refill_at = 1 # Add tracks when this many or fewer are left after the current one
+batch_size = 5 # Tracks added per refill
+seed_batch_size = 25 # Tracks queued when seeding a new session
+contrast = 0.35 # 0 = consistency (hug the vibe), 1 = maximum variety
+
 [filters]
 titles = [] # Exclude songs with titles containing these strings
 artists = [] # Exclude songs by these artists
@@ -119,3 +127,9 @@ max_rating = 0 # Exclude songs with a rating less than or equal to this number (
   [keybinds.other]
   toggle_notifications = ['s']
   create_share_link    = ['ctrl+s']
+
+  [keybinds.autodj]
+  toggle        = ['z']
+  seed          = ['Z']
+  contrast_down = ['[']
+  contrast_up   = [']']

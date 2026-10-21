@@ -406,6 +406,7 @@ func (m model) handleStatus(msg statusMsg) (tea.Model, tea.Cmd) {
 		windowTitle := fmt.Sprintf("%s - %s", metadata.Title, metadata.Artist)
 		cmds = append(cmds, m.setWindowTitle(windowTitle)) // Update windows title
 		cmds = append(cmds, m.savePlayQueue())             // Server queue update
+		cmds = append(cmds, m.maybeRefillAutoDJ())
 	}
 
 	// Discord update
