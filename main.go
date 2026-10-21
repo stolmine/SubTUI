@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"path/filepath"
 
@@ -40,6 +42,11 @@ func main() {
 	if *showVersion {
 		fmt.Printf("Version: %s | Commit: %s\n", version, commit)
 		os.Exit(0)
+	}
+
+	// Profiling endpoint for performance work, e.g. SUBTUI_PPROF=127.0.0.1:6060
+	if addr := os.Getenv("SUBTUI_PPROF"); addr != "" {
+		go func() { log.Println(http.ListenAndServe(addr, nil)) }()
 	}
 
 	// Mouse support
