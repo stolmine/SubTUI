@@ -50,3 +50,5 @@ require (
 )
 
 replace github.com/lrstanley/bubblezone => ./third_party/bubblezone
+
+replace github.com/charmbracelet/bubbletea => ./third_party/bubbletea
